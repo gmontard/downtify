@@ -210,6 +210,12 @@ def album_tracks_from_id(album_id: str) -> list[dict[str, Any]]:
 
 
 def playlist_tracks_from_id(playlist_id: str) -> list[dict[str, Any]]:
+    return playlist_from_id(playlist_id)['tracks']
+
+
+def playlist_from_id(playlist_id: str) -> dict[str, Any]:
+    """Return ``{'playlist_name': str, 'tracks': [...]}`` for a playlist."""
+
     payload = _fetch_embed_json('playlist', playlist_id)
     entity = _entity_from(payload)
     track_items = entity.get('trackList') or []
@@ -224,7 +230,10 @@ def playlist_tracks_from_id(playlist_id: str) -> list[dict[str, Any]]:
         if not track_id:
             continue
         songs.append(_track_dict(track, track_id=track_id))
-    return songs
+    return {
+        'playlist_name': entity.get('name') or '',
+        'tracks': songs,
+    }
 
 
 def _id_from_uri(uri: str) -> str:

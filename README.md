@@ -108,6 +108,16 @@ Downtify's pipeline has three stages — metadata, audio, and tagging:
 | OGG | ✅ |
 | OPUS | ✅ |
 
+### 📃 M3U playlist export
+
+When you paste a **playlist** link, a "Generate M3U playlist file" checkbox appears next to the input — it's on by default. After every track has been processed, Downtify writes a standard `EXTM3U` file to:
+
+```
+<downloads>/Playlists/<playlist-name>.m3u
+```
+
+Tracks that failed to download or had no YouTube Music match are skipped (and logged); the M3U is regenerated fresh on every run, so re-pasting the same playlist URL always produces a complete file. Drop your `/downloads` mount into Jellyfin (or any media server that scans M3U) and the playlist will appear as a single unit instead of a pile of loose files.
+
 > [!WARNING]
 > Users are responsible for their actions and any legal consequences. We do not support unauthorized downloading of copyrighted material and take no responsibility for user actions.
 
