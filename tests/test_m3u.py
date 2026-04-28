@@ -104,12 +104,31 @@ def test_build_skips_entries_without_filename(tmp_path):
     assert content == '#EXTM3U\n'
 
 
-def test_build_uses_absolute_paths(tmp_path):
-    path = _touch(tmp_path, 'song.mp3')
+def test_build_uses_paths_relative_to_m3u_dir(tmp_path):
+    # Track is flat under download_dir; M3U lives in download_dir/Playlists.
+    # Relative path back to the track is therefore '../song.mp3'.
+    _touch(tmp_path, 'song.mp3')
     content, _ = m3u.build_m3u_content(
         [{'filename': 'song.mp3'}], download_dir=tmp_path
     )
-    assert str(path.resolve()) in content
+    assert '../song.mp3' in content
+    # Absolute path must NOT leak into the M3U.
+    assert str(tmp_path) not in content
+
+
+def test_build_relative_paths_with_explicit_m3u_dir(tmp_path):
+    # Track nested under an artist subdir, M3U sibling at Playlists/.
+    artist_dir = tmp_path / 'Artist' / 'Album'
+    artist_dir.mkdir(parents=True)
+    (artist_dir / 'Track.mp3').write_bytes(b'\x00')
+    m3u_dir = tmp_path / 'Playlists'
+    m3u_dir.mkdir()
+    content, _ = m3u.build_m3u_content(
+        [{'filename': 'Artist/Album/Track.mp3'}],
+        download_dir=tmp_path,
+        m3u_dir=m3u_dir,
+    )
+    assert '../Artist/Album/Track.mp3' in content
 
 
 def test_build_extinf_format_with_artist_and_title(tmp_path):

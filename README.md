@@ -116,7 +116,9 @@ When you paste a **playlist** link, a "Generate M3U playlist file" checkbox appe
 <downloads>/Playlists/<playlist-name>.m3u
 ```
 
-Tracks that failed to download or had no YouTube Music match are skipped (and logged); the M3U is regenerated fresh on every run, so re-pasting the same playlist URL always produces a complete file. Drop your `/downloads` mount into Jellyfin (or any media server that scans M3U) and the playlist will appear as a single unit instead of a pile of loose files.
+Tracks that failed to download or had no YouTube Music match are skipped (and logged); the M3U is regenerated fresh on every run, so re-pasting the same playlist URL always produces a complete file.
+
+Track paths inside the M3U are written **relative to the M3U file itself**, so the same file works whether it's read from inside Downtify (where the library is mounted at `/downloads`) or from another consumer that mounts the same library at a different root — e.g. Jellyfin under `/nas/music`. Just point your media server at the same library mount and the playlist will appear as a single unit instead of a pile of loose files.
 
 > [!WARNING]
 > Users are responsible for their actions and any legal consequences. We do not support unauthorized downloading of copyrighted material and take no responsibility for user actions.
