@@ -314,10 +314,27 @@ class Downloader:
             )
 
         url = f'https://music.youtube.com/watch?v={video_id}'
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            ydl.download([url])
-
         final_path = target_dir / f'{basename}.{self.audio_format}'
+        try:
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                ydl.download([url])
+        except FileNotFoundError as exc:
+            # yt-dlp's ``FFmpegExtractAudioPP`` ends with two ``os.replace``
+            # calls. When the source ext differs from the target ext (mp4 →
+            # mp3, etc.), the first one is a no-op rename of ``path`` onto
+            # itself. We've seen it raise FileNotFoundError mid-Monitor
+            # sweeps despite ffmpeg having produced the converted file.
+            # Treat it as success when the expected target audio is on disk
+            # — the download already happened, we'd otherwise lose a file.
+            if not final_path.exists():
+                raise
+            logger.warning(
+                'Recovered from yt-dlp postprocessor FileNotFoundError; '
+                'converted file {} is intact ({}). Continuing.',
+                final_path,
+                exc,
+            )
+
         if not final_path.exists():
             # yt-dlp sometimes uses the upstream extension for opus/m4a
             for candidate in target_dir.glob(f'{basename}.*'):
